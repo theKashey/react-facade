@@ -1,6 +1,6 @@
 {
   "name": "react-stand-in",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0-alpha-2",
   "description": "Proxies ES6 React components without unmounting or losing their state.",
   "main": "modules/index.js",
   "scripts": {
