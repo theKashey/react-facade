@@ -27,6 +27,12 @@ function isClass(Component) {
   return Component.prototype && Component.prototype.isReactComponent;
 }
 
+function isNativeFunction (fn) {
+  return typeof fn === 'function'
+    ? fn.toString().indexOf('[native code]') > 0
+    : false
+}
+
 const lifeCycleMethods = [
   'componentWillMount',
   'componentDidMount',
@@ -44,10 +50,14 @@ function checkClassMembers(ProxyComponent, NextComponent) {
       .keys(mergeProps)
       .filter(key => !key.startsWith('__facade__'))
       .forEach(function (key) {
+        if(isNativeFunction(ins2[key]) || isNativeFunction(ins2[key])){
+          console.error('React-stand-in:', ' Updated class ', ProxyComponent.name, 'contains native or bound function ', key, ins2[key], '. Unable to reproduce');
+        }
+
         if (("" + ins1[key]) != ("" + ins2[key])) {
 
           if(!ins1[REGENERATION]){
-            console.error('React-facade:', ' Updated class ', ProxyComponent.name, 'had different code for', key, ins2[key], '. Unable to reproduce');
+            console.error('React-stand-in:', ' Updated class ', ProxyComponent.name, 'had different code for', key, ins2[key], '. Unable to reproduce');
           } else {
             injectedCode[key] = ins2[key];
           }
@@ -66,7 +76,7 @@ function checkLifeCycleMethods(ProxyComponent, NextComponent) {
     lifeCycleMethods
       .forEach(function (key) {
         if (("" + p1[key]) != ("" + p2[key])) {
-          console.error('React-facade:', 'You did update', ProxyComponent.name, '\s lifecycle method', key, p2[key], '. Unable to repeat');
+          console.error('React-stand-in:', 'You did update', ProxyComponent.name, '\s lifecycle method', key, p2[key], '. Unable to repeat');
         }
       });
   } catch (e) {
@@ -140,6 +150,7 @@ function proxyClass(InitialComponent) {
     }
 
     proxyGeneration++;
+    injectedMembers = {};
 
     // Save the next constructor so we call it
     const PreviousComponent = CurrentComponent;
@@ -162,10 +173,11 @@ function proxyClass(InitialComponent) {
     if (isClass(NextComponent)) {
       checkLifeCycleMethods(ProxyComponent, NextComponent);
       Object.setPrototypeOf(ProxyComponent.prototype, NextComponent.prototype);
-      injectedMembers = checkClassMembers(ProxyComponent, NextComponent);
+      if(proxyGeneration>1) {
+        injectedMembers = checkClassMembers(ProxyComponent, NextComponent);
+      }
     } else {
       ProxyComponent.prototype.prototype = StatelessProxyComponent.prototype;
-      injectedMembers = {};
     }
   };
 
