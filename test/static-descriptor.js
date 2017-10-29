@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import createShallowRenderer from './helpers/createShallowRenderer';
 import expect from 'expect';
-import { createProxy } from '../src';
+import createProxy from '../src';
 
 const fixtures = {
   modern: {
@@ -169,8 +169,9 @@ describe('static descriptor', () => {
 
           proxy.update(StaticDescriptorRemoval);
           expect(instance.constructor._something).toEqual(30);
-          instance.constructor.something = 7;
-          expect(instance.constructor.something).toEqual(7);
+
+          expect(() => instance.constructor.something = 7).toThrow();
+          //expect(instance.constructor.something).toEqual(7);
           expect(instance.constructor._something).toEqual(30);
         });
 

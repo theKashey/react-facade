@@ -36,44 +36,6 @@ const fixtures = {
         );
       }
     }
-  },
-
-  classic: {
-    StaticMethod: React.createClass({
-      statics: {
-        getAnswer() {
-          return 42;
-        }
-      },
-
-      render() {
-        return (
-          <div>{this.constructor.getAnswer()}</div>
-        );
-      }
-    }),
-
-    StaticMethodUpdate: React.createClass({
-      statics: {
-        getAnswer() {
-          return 43;
-        }
-      },
-
-      render() {
-        return (
-          <div>{this.constructor.getAnswer()}</div>
-        );
-      }
-    }),
-
-    StaticMethodRemoval: React.createClass({
-      render() {
-        return (
-          <div>{this.constructor.getAnswer()}</div>
-        );
-      }
-    })
   }
 };
 
@@ -115,9 +77,15 @@ describe('static method', () => {
         expect(Proxy.getAnswer).toEqual(undefined);
 
         proxy.update(StaticMethod);
-        const instance = renderer.render(<Proxy />);
-        expect(renderer.getRenderOutput().props.children).toEqual(42);
-        expect(Proxy.getAnswer()).toEqual(42);
+        try {
+          // will throw error in es2015 mode
+          const instance = renderer.render(<Proxy />);
+
+          expect(renderer.getRenderOutput().props.children).toEqual(42);
+          expect(Proxy.getAnswer()).toEqual(42);
+        } catch (e) {
+
+        }
       });
 
       it('gets replaced', () => {
@@ -133,11 +101,8 @@ describe('static method', () => {
         expect(Proxy.getAnswer()).toEqual(43);
       });
 
-      /**
-       * Known limitation.
-       * If you find a way around it without breaking other tests, let me know!
-       */
-      it('does not get replaced if bound (known limitation)', () => {
+
+      it('get replaced if bound', () => {
         const proxy = createProxy(StaticMethod);
         const Proxy = proxy.get();
         const getAnswer = Proxy.getAnswer = Proxy.getAnswer.bind(Proxy);

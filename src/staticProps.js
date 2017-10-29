@@ -25,13 +25,13 @@ function isEqualDescriptor(a, b) {
 }
 
 function transferStaticProps(ProxyComponent, savedDescriptors, PreviousComponent, NextComponent) {
-  if (PreviousComponent) {
-    Object.getOwnPropertyNames(PreviousComponent).forEach(key => {
+  if (ProxyComponent) {
+    Object.getOwnPropertyNames(ProxyComponent).forEach(key => {
       if (RESERVED_STATICS.indexOf(key) > -1) {
         return;
       }
 
-      const prevDescriptor = Object.getOwnPropertyDescriptor(PreviousComponent, key);
+      const prevDescriptor = Object.getOwnPropertyDescriptor(ProxyComponent, key);
       const savedDescriptor = savedDescriptors[key];
 
       if (!isEqualDescriptor(prevDescriptor, savedDescriptor)) {
@@ -45,13 +45,13 @@ function transferStaticProps(ProxyComponent, savedDescriptors, PreviousComponent
       return;
     }
 
-    const prevDescriptor = PreviousComponent && Object.getOwnPropertyDescriptor(PreviousComponent, key);
+    const prevDescriptor = PreviousComponent && Object.getOwnPropertyDescriptor(ProxyComponent, key);
     const savedDescriptor = savedDescriptors[key];
 
     // Skip redefined descriptors
     if (prevDescriptor && savedDescriptor && !isEqualDescriptor(savedDescriptor, prevDescriptor)) {
       Object.defineProperty(NextComponent, key, prevDescriptor);
-      Object.defineProperty(ProxyComponent, key, prevDescriptor);
+      //Object.defineProperty(ProxyComponent, key, prevDescriptor);
       return;
     }
 
@@ -91,7 +91,9 @@ function transferStaticProps(ProxyComponent, savedDescriptors, PreviousComponent
       return;
     }
 
-    delete ProxyComponent[key];
+    Object.defineProperty(ProxyComponent, key, {
+      value: undefined
+    });
   });
 
   return savedDescriptors;

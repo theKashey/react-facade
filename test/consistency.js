@@ -39,43 +39,6 @@ const fixtures = {
         return <div>Foo</div>;
       }
     }
-  },
-
-  classic: {
-    Bar: React.createClass({
-      componentWillUnmount() {
-        this.didUnmount = true;
-      },
-
-      doNothing() {
-      },
-
-      render() {
-        return <div>Bar</div>;
-      }
-    }),
-
-    Baz: React.createClass({
-      componentWillUnmount() {
-        this.didUnmount = true;
-      },
-
-      render() {
-        return <div>Baz</div>;
-      }
-    }),
-
-    Foo: React.createClass({
-      displayName: 'Foo (Custom)',
-
-      componentWillUnmount() {
-        this.didUnmount = true;
-      },
-
-      render() {
-        return <div>Foo</div>;
-      }
-    })
   }
 };
 
@@ -192,75 +155,16 @@ describe('consistency', () => {
         expect(barInstance.constructor.displayName).toEqual('Foo (Custom)');
       });
 
-      it('keeps own methods on the prototype', () => {
+      it('inherits from base', () => {
         let proxy = createProxy(Bar);
         const Proxy = proxy.get();
 
-        const propertyNames = Object.getOwnPropertyNames(Proxy.prototype);
-        expect(propertyNames).toInclude('doNothing');
+        expect(Proxy.prototype instanceof  Bar).toEqual(true);
       });
 
-      it('preserves enumerability and writability of methods', () => {
-        let proxy = createProxy(Bar);
-        const Proxy = proxy.get();
-
-        ['doNothing', 'render', 'componentDidMount', 'componentWillUnmount'].forEach(name => {
-          const originalDescriptor = Object.getOwnPropertyDescriptor(Bar.prototype, name);
-          const proxyDescriptor = Object.getOwnPropertyDescriptor(Proxy.prototype, name);
-
-          if (originalDescriptor) {
-            expect(proxyDescriptor.enumerable).toEqual(originalDescriptor.enumerable, name);
-            expect(proxyDescriptor.writable).toEqual(originalDescriptor.writable, name);
-          } else {
-            expect(proxyDescriptor.enumerable).toEqual(false, name);
-            expect(proxyDescriptor.writable).toEqual(true, name);
-          }
-        });
-      });
-
-      it('preserves toString() of methods', () => {
-        let proxy = createProxy(Bar);
-
-        const Proxy = proxy.get();
-        ['doNothing', 'render', 'componentWillUnmount', 'constructor'].forEach(name => {
-          const originalMethod = Bar.prototype[name];
-          const proxyMethod = Proxy.prototype[name];
-          expect(originalMethod.toString()).toEqual(proxyMethod.toString());
-        });
-
-        const doNothingBeforeItWasDeleted = Proxy.prototype.doNothing;
-        proxy.update(Baz);
-        ['render', 'componentWillUnmount', 'constructor'].forEach(name => {
-          const originalMethod = Baz.prototype[name];
-          const proxyMethod = Proxy.prototype[name];
-          expect(originalMethod.toString()).toEqual(proxyMethod.toString());
-        });
-        expect(doNothingBeforeItWasDeleted.toString()).toEqual('<method was deleted>');
-      });
     });
   });
 
-  describe('classic only', () => {
-    const { Bar, Baz } = fixtures.classic;
-
-    it('sets up legacy type property', () => {
-      let proxy = createProxy(Bar);
-      const Proxy = proxy.get();
-      const barInstance = renderer.render(<Proxy />);
-
-      warnSpy.destroy();
-      const localWarnSpy = expect.spyOn(console, 'warn');
-      expect(barInstance.constructor.type).toEqual(Proxy);
-
-      proxy.update(Baz);
-      const BazProxy = proxy.get();
-      expect(Proxy).toEqual(BazProxy);
-      expect(barInstance.constructor.type).toEqual(BazProxy);
-
-      expect(localWarnSpy.calls.length).toBe(1);
-      localWarnSpy.destroy();
-    });
-  });
 
   describe('modern only', () => {
     const { Bar, Baz } = fixtures.modern;
@@ -270,9 +174,8 @@ describe('consistency', () => {
       const Proxy = proxy.get();
       expect(Proxy.name).toEqual('Bar');
 
-      // Known limitation: name can't change
       proxy.update(Baz);
-      expect(Proxy.name).toEqual('Bar');
+      expect(Proxy.name).toEqual('Baz');
     });
 
     it('should not crash if new Function() throws', () => {

@@ -42,41 +42,13 @@ const fixtures = {
 
       getAnswer = () => {
         console.log(this);
-        return this.__REACT_PROXY_CONTEXT.answer;
+        return this.answer;
       }
 
       render() {
         return <div>{this.getAnswer()}</div>;
       }
     },
-  },
-
-  classic: {
-    InstanceProperty: React.createClass({
-      componentWillMount() {
-        this.answer = 42;
-      },
-
-      render() {
-        return <div>{this.answer}</div>;
-      }
-    }),
-
-    InstancePropertyUpdate: React.createClass({
-      componentWillMount() {
-        this.answer = 43;
-      },
-
-      render() {
-        return <div>{this.answer}</div>;
-      }
-    }),
-
-    InstancePropertyRemoval: React.createClass({
-      render() {
-        return <div>{this.answer}</div>;
-      }
-    })
   }
 };
 

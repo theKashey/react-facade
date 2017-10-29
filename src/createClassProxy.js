@@ -24,7 +24,14 @@ function addProxy(Component, proxy) {
 }
 
 function isClass(Component) {
-  return Component.prototype && Component.prototype.isReactComponent;
+  return Component.prototype && (
+    Component.prototype.isReactComponent ||
+    Component.prototype.componentWillMount ||
+    Component.prototype.componentWillUnmount ||
+    Component.prototype.componentDidMount ||
+    Component.prototype.componentDidUnmount ||
+    Component.prototype.render
+    );
 }
 
 function isNativeFunction (fn) {
@@ -51,13 +58,17 @@ function checkClassMembers(ProxyComponent, NextComponent) {
       .filter(key => !key.startsWith('__facade__'))
       .forEach(function (key) {
         if(isNativeFunction(ins2[key]) || isNativeFunction(ins2[key])){
-          console.error('React-stand-in:', ' Updated class ', ProxyComponent.name, 'contains native or bound function ', key, ins2[key], '. Unable to reproduce');
+          console.error('React-stand-in:',
+            ' Updated class ', ProxyComponent.name, 'contains native or bound function ', key, ins2[key],
+            '. Unable to reproduce, use arrow functions instead.');
         }
 
         if (("" + ins1[key]) != ("" + ins2[key])) {
 
           if(!ins1[REGENERATION]){
-            console.error('React-stand-in:', ' Updated class ', ProxyComponent.name, 'had different code for', key, ins2[key], '. Unable to reproduce');
+            console.error('React-stand-in:',
+              ' Updated class ', ProxyComponent.name, 'had different code for', key, ins2[key],
+              '. Unable to reproduce. Regenration support needed.');
           } else {
             injectedCode[key] = ins2[key];
           }
@@ -158,7 +169,7 @@ function proxyClass(InitialComponent) {
 
     // Try to infer displayName
 
-    let displayName = getDisplayName(NextComponent);
+    const displayName = getDisplayName(CurrentComponent);
     ProxyComponent.displayName = displayName;
 
     try {
@@ -167,6 +178,7 @@ function proxyClass(InitialComponent) {
       });
     } catch (err) {
     }
+
 
     savedDescriptors = transferStaticProps(ProxyComponent, savedDescriptors, PreviousComponent, NextComponent);
 
