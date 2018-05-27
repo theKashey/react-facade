@@ -1,4 +1,4 @@
-# React Stand-In (Facade) [![build status](https://img.shields.io/travis/thekashey/react-stand-in/master.svg?style=flat-square)](https://travis-ci.org/thekashey/react-stand-in) [![npm version](https://img.shields.io/npm/v/react-proxy.svg?style=flat-square)](https://www.npmjs.com/package/react-proxy) 
+# React Stand-In (Facade) [![build status](https://img.shields.io/travis/thekashey/react-stand-in/master.svg?style=flat-square)](https://travis-ci.org/thekashey/react-stand-in) [![npm version](https://img.shields.io/npm/v/react-proxy.svg?style=flat-square)](https://www.npmjs.com/package/react-proxy) [![Greenkeeper badge](https://badges.greenkeeper.io/theKashey/react-stand-in.svg)](https://greenkeeper.io/) 
 Drop-in replace of [react-proxy](https://github.com/gaearon/react-proxy). All this README are borrowed from it.
 
 ``The difference? This one works only for ES6 code, and  does not support old React implimentation``
